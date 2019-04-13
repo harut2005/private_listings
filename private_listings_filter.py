@@ -136,7 +136,7 @@ while(xe_url):
 # write links to an html file
 #<CENTER><IMG SRC="clouds.jpg" ALIGN="BOTTOM"> </CENTER>
 raw_file = '<HTML>\n<HEAD>\n<meta charset="utf-8">\n<TITLE>Spitogatos</TITLE></HEAD>\n<BODY BGCOLOR="FFFFFF">\n'
-raw_file += '<H2>Λίστα με ακίνητα <b>μόνο από ιδιώτες</b> και τιμή μέχρι '+price+' €' + ' (' + str(datetime.today().strftime("%Y-%m-%d")) + ')</H1>\n'
+raw_file += '<H2>Λίστα με ακίνητα <b>μόνο από ιδιώτες</b> και τιμή μέχρι '+price+' + ' (' + str(datetime.today().strftime("%Y-%m-%d")) + ')</H1>\n'
 # raw_file += '<input type="button" id=\'script\' name="scriptbutton" value=" Ανανέωση " onclick="exec(\'python spitogatos.py\');window.location.reload();">\n'
 raw_file += '<div><a href="https://en.spitogatos.gr/"><img src="https://cdn.spitogatos.gr/frontend/images/logo/logo.header.new.en.png"></a></div>\n'
 raw_file += spitogatos_listings_html_body
