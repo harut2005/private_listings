@@ -98,13 +98,22 @@ while(xe_url):
 	url = response.read()
 	response.close()
 
+	all_listings_match = re.compile(r'class="lazy[\S|\s]+?<ul class=\"r_actions\">[\S\s]+?</ul>[\S\s]{1,300}</div').findall(url)
+	for listing in all_listings_match:
+		private_listings_match = re.compile(r'r_desc[^<]+<h2>\s*<a href="([^"]+)"[\S\s]+?<br />([^<]+)[\S\s]+?r_stats">([\S\s]+?)<li>(\d+)[\S\s]+?r_date">([\S\s]+?)</p>[\S\s]+?</ul>[\s]{1,20}</div').findall(listing)
+		if private_listings_match:
+			for link, desc, price_field, size, date in private_listings_match:
+				count += 1
+				# check if price is given
+				price_match = re.findall(r'r_price">([\S\s]+)<',price_field)
+				if price_match:
+					price = price_match[0]
+				else:
+					price = "xx.xxx €"
+				date = date.rstrip()
+				xe_listings_html_body += "<a target=\"_blank\" href=\"https://www.xe.gr"+link+"\"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+ desc+"</a><br>\n"
+				print link
 
-	match = re.compile(r'<div class="lazy[^<]+<a href="([^"]+)".+?</a><br>([^<]+)</p>.+?<li class="r_price">([^<]+).+?<p class="r_date">([^<]+).+?</ul>[^<]+</div>', re.DOTALL).findall(url)
-	if match:
-		for link, desc, price, date in match:
-			count += 1
-			xe_listings_html_body += "<a target=\"_blank\" href="+link+"><b>"+ str(price) +"</b>  ("+date+")  "+ desc+"</a><br>\n"
-			print link
 
 
 	next_page = re.findall(r'<td>[^<]+<a href="([^"]+)" class="white_button right+',url)
