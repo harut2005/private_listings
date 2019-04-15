@@ -4,13 +4,13 @@ from datetime import datetime
 
 # general configs
 if (len(sys.argv) > 1):
-	price = sys.argv[1]
+	max_price = sys.argv[1]
 else:
-	price = input("Set a price (Euro):\n")
+	max_price = input("Set a price (Euro):\n")
 
 # price = 75000
 
-print "Price set to: " + str(price) + " €"
+print "Price set to: " + str(max_price) + " €"
 
 time_start = time.time()
 spitogatos_website_timeout = 280
@@ -19,12 +19,12 @@ output_html = "private_listings.html"
 spitogatos_homepage = "https://spitogatos.gr"
 spitogatos_url = spitogatos_homepage + "/search/results/residential/sale/r100/m100m101m102m103m104m/order_datemodified_desc"
 spitogatos_url += "/uploaded_month" # only listings added last month
-spitogatos_url += "/price_nd-"+str(price)
+spitogatos_url += "/price_nd-"+str(max_price)
 spitogatos_url += "/offset_0" # start from page 1
 
 xe_homepage = "https://www.xe.gr"
 xe_url = xe_homepage + "/property/search?Geo.area_id_new__hierarchy=82196&System.item_type=re_residence&Transaction.price.to="
-xe_url += str(price)+"&Transaction.type_channel=117518&per_page=50&sort_by=Publication.effective_date_start&sort_direction=desc"
+xe_url += str(max_price)+"&Transaction.type_channel=117518&per_page=50&sort_by=Publication.effective_date_start&sort_direction=desc"
 xe_url += "&page=1" # start from page 1
 xe_url += "&Publication.age=30" # only listings added last month
 
@@ -133,7 +133,7 @@ print "\nXE.gr completed. "+str(count)+" listings found.\n"
 
 # write links to an html file
 raw_file = '<HTML>\n<HEAD>\n<meta charset="utf-8">\n<TITLE>Spitogatos</TITLE></HEAD>\n<BODY BGCOLOR="FFFFFF">\n'
-raw_file += '<H2>Λίστα με ακίνητα <b>μόνο από ιδιώτες</b> και τιμή μέχρι '+str(price)+' (' + str(datetime.today().strftime("%Y-%m-%d")) + ')</H1>\n'
+raw_file += '<H2>Λίστα με ακίνητα <b>μόνο από ιδιώτες</b> και τιμή μέχρι '+str(max_price)+' € (' + str(datetime.today().strftime("%Y-%m-%d")) + ')</H1>\n'
 
 raw_file += '<div><a href="https://en.spitogatos.gr/"><img src="https://cdn.spitogatos.gr/frontend/images/logo/logo.header.new.en.png"></a></div>\n'
 raw_file += spitogatos_listings_html_body
