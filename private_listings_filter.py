@@ -16,12 +16,17 @@ time_start = time.time()
 spitogatos_website_timeout = 280
 output_html = "private_listings.html"
 
-spitogatos_url = "https://spitogatos.gr/search/results/residential/sale/r100/m100m101m102m103m104m/order_datemodified_desc"
-spitogatos_url += "/uploaded_month"
+spitogatos_homepage = "https://spitogatos.gr"
+spitogatos_url = spitogatos_homepage + "/search/results/residential/sale/r100/m100m101m102m103m104m/order_datemodified_desc"
+spitogatos_url += "/uploaded_month" # only listings added last month
 spitogatos_url += "/price_nd-"+str(price)
-spitogatos_url += "/offset_0"#+str(offset)
+spitogatos_url += "/offset_0" # start from page 1
 
-xe_url = "https://www.xe.gr/property/search?Geo.area_id_new__hierarchy=82196&System.item_type=re_residence&Transaction.price.to="+str(price)+"&Transaction.type_channel=117518&per_page=50&sort_by=Publication.effective_date_start&sort_direction=desc&page=1&Publication.age=30"
+xe_homepage = "https://www.xe.gr"
+xe_url = xe_homepage + "/property/search?Geo.area_id_new__hierarchy=82196&System.item_type=re_residence&Transaction.price.to="
+xe_url += str(price)+"&Transaction.type_channel=117518&per_page=50&sort_by=Publication.effective_date_start&sort_direction=desc"
+xe_url += "&page=1" # start from page 1
+xe_url += "&Publication.age=30" # only listings added last month
 
 
 
@@ -92,8 +97,6 @@ while(xe_url):
 	else:
 		print "Last page\n"
 		break
-	# req = urllib2.Request(xe_url)
-	# response = urllib2.urlopen(req)
 	response = urllib2.urlopen(xe_url)
 	url = response.read()
 	response.close()
@@ -111,9 +114,8 @@ while(xe_url):
 				else:
 					price = "xx.xxx €"
 				date = date.rstrip()
-				xe_listings_html_body += "<a target=\"_blank\" href=\"https://www.xe.gr"+link+"\"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+ desc+"</a><br>\n"
+				xe_listings_html_body += "<a target=\"_blank\" href=\""+xe_homepage+link+"\"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+ desc+"</a><br>\n"
 				print link
-
 
 
 	next_page = re.findall(r'<td>[^<]+<a href="([^"]+)" class="white_button right+',url)
@@ -130,20 +132,17 @@ print "\nXE.gr completed. "+str(count)+" listings found.\n"
 
 
 # write links to an html file
-#<CENTER><IMG SRC="clouds.jpg" ALIGN="BOTTOM"> </CENTER>
 raw_file = '<HTML>\n<HEAD>\n<meta charset="utf-8">\n<TITLE>Spitogatos</TITLE></HEAD>\n<BODY BGCOLOR="FFFFFF">\n'
 raw_file += '<H2>Λίστα με ακίνητα <b>μόνο από ιδιώτες</b> και τιμή μέχρι '+str(price)+' (' + str(datetime.today().strftime("%Y-%m-%d")) + ')</H1>\n'
-# raw_file += '<input type="button" id=\'script\' name="scriptbutton" value=" Ανανέωση " onclick="exec(\'python spitogatos.py\');window.location.reload();">\n'
+
 raw_file += '<div><a href="https://en.spitogatos.gr/"><img src="https://cdn.spitogatos.gr/frontend/images/logo/logo.header.new.en.png"></a></div>\n'
 raw_file += spitogatos_listings_html_body
 
 raw_file += '<br>\n<div><a href="https://www.xe.gr/property/"><img src="https://static.xe.gr/property/images/property_logo_new.png"></a></div>\n'
-# for listing in xe_links_list:
-# 	raw_file += "<a href="+listing+">"+listing+"</a><br>\n"
 raw_file += xe_listings_html_body
 
 raw_file += "</BODY></HTML>"
-# print raw_file
+
 
 f = open(output_html, 'w')
 f.write(raw_file)
