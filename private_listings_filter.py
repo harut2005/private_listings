@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import urllib, urllib2, re, os, time, sys
+import re, os, time, sys
+from urllib.request import urlopen
 from datetime import datetime
 
 # general configs
@@ -8,9 +9,7 @@ if (len(sys.argv) > 1):
 else:
 	max_price = input("Set a price (Euro):\n")
 
-# price = 75000
-
-print "Price set to: " + str(max_price) + " €"
+print("Price set to: ",str(max_price)," €")
 
 time_start = time.time()
 spitogatos_website_timeout = 280
@@ -34,7 +33,7 @@ xe_url += "&Publication.age=30" # only listings added last month
 
 def checkTimeout(time_start, website_timeout):
 	if ((int(time.time())-int(time_start)) > website_timeout):
-		print "wait 10s to avoid connection error\n"
+		print("wait 10s to avoid connection error\n")
 		time.sleep(10)
 		return True
 	else:
@@ -45,15 +44,15 @@ spitogatos_listings_html_body = ""
 search_timeout = int(time.time())
 count = 0
 
-print "\nSearching in Spitogatos.gr.\n"
+print("\nSearching in Spitogatos.gr.\n")
 while(spitogatos_url):
 	if checkTimeout(search_timeout, spitogatos_website_timeout):
 		search_timeout = time.time()
 
 
-	print "Searching in page "+str(1+int(spitogatos_url.rsplit("offset_")[1])/10)
-	response = urllib2.urlopen(spitogatos_url)
-	url = response.read()
+	print("Searching in page "+str(1+int(spitogatos_url.rsplit("offset_")[1])/10))
+	response = urlopen(spitogatos_url)
+	url = response.read().decode('utf-8')
 	response.close()
 
 	all_listings_match = re.compile(r'searchListing_title"><a href="([^"]+".{1,2800})sg\-icon\-private', re.DOTALL).findall(url)
@@ -65,7 +64,7 @@ while(spitogatos_url):
 					count += 1
 					listing_link = link
 					# print date+price+desc+filt
-					print listing_link
+					print(listing_link)
 					# spitogatos_links_list.append(listing_link)
 					spitogatos_listings_html_body += "<a target=\"_blank\" href="+listing_link+"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+region+"  "+desc+"</a><br>\n"
 
@@ -77,7 +76,7 @@ while(spitogatos_url):
 	else:
 		spitogatos_url = next_page[0]
 
-print "\nSpitogatos completed. "+str(count)+" listings found.\n"
+print("\nSpitogatos completed. "+str(count)+" listings found.\n")
 
 
 # xe.gr
@@ -88,19 +87,19 @@ xe_links_list = []
 xe_listings_html_body = ""
 count = 0
 
-print "\nSearching in Xe.gr.\n"
+print("\nSearching in Xe.gr.\n")
 while(xe_url):
 	if checkTimeout(search_timeout, xe_website_timeout):
 		search_timeout = time.time()
 
 	page_match = re.search(r'[^_]page=(\d+)', xe_url)
 	if page_match:
-		print "Searching in page " + str(page_match.group(1))
+		print("Searching in page " + str(page_match.group(1)))
 	else:
-		print "Last page\n"
+		print("Last page\n")
 		break
-	response = urllib2.urlopen(xe_url)
-	url = response.read()
+	response = urlopen(xe_url)
+	url = response.read().decode('utf-8')
 	response.close()
 
 	all_listings_match = re.compile(r'class="lazy[\S|\s]+?<ul class=\"r_actions\">[\S\s]+?</ul>[\S\s]{1,300}</div').findall(url)
@@ -117,7 +116,7 @@ while(xe_url):
 					price = "xx.xxx €"
 				date = date.rstrip()
 				xe_listings_html_body += "<a target=\"_blank\" href=\""+xe_homepage+link+"\"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+ desc+"</a><br>\n"
-				print link
+				print(link)
 
 
 	next_page = re.findall(r'<td>[^<]+<a href="([^"]+)" class="white_button right+',url)
@@ -127,7 +126,7 @@ while(xe_url):
 	else:
 		xe_url = "https://www.xe.gr"+next_page[0]
 
-print "\nXE.gr completed. "+str(count)+" listings found.\n"
+print("\nXE.gr completed. "+str(count)+" listings found.\n")
 
 
 
@@ -150,4 +149,4 @@ f = open(output_html, 'w')
 f.write(raw_file)
 f.close
 
-print "\nProgram completed sucessfully in " + '{:.0f}'.format(time.time() - time_start) +" seconds\n"
+print("\nProgram completed sucessfully in " + '{:.0f}'.format(time.time() - time_start) +" seconds\n")
