@@ -16,6 +16,9 @@ spitogatos_website_timeout = 280
 output_html = "private_listings.html"
 
 spitogatos_homepage = "https://spitogatos.gr"
+spitogatos_nof_listings_in_page = 10
+spitogatos_total_listings_pattern = r'searchTotalNumberOfResults">[^<]+<b>(\d*)<'
+
 spitogatos_url = spitogatos_homepage + "/search/results/residential/sale/r100/m100m101m102m103m104m/order_datemodified_desc"
 spitogatos_url += "/uploaded_month" # only listings added last month
 spitogatos_url += "/floorNumber_ground_floor-nd" #  # >= Ground Floor
@@ -23,12 +26,20 @@ spitogatos_url += "/price_nd-"+str(max_price)
 spitogatos_url += "/offset_0" # start from page 1
 
 xe_homepage = "https://www.xe.gr"
+xe_total_listings_pattern = r'r_subtitle">[^>]+>(\d*[.]\d*)<'
+xe_page_pattern = r'r_paging_label">[^>]+>(\d*)[^>]+>[^>]+>(\d*)'
 xe_url = xe_homepage + "/property/search?Geo.area_id_new__hierarchy=82196&System.item_type=re_residence&Transaction.price.to="
 xe_url += str(max_price)+"&Transaction.type_channel=117518&per_page=50&sort_by=Publication.effective_date_start&sort_direction=desc"
 xe_url += "&Publication.level_num.from=1" # >= Ground Floor
 xe_url += "&page=1" # start from page 1
 xe_url += "&Publication.age=30" # only listings added last month
 
+
+def request_url(url):
+	response = urlopen(url)
+	url = response.read().decode('utf-8')
+	response.close()
+	return url
 
 
 def checkTimeout(time_start, website_timeout):
@@ -39,21 +50,42 @@ def checkTimeout(time_start, website_timeout):
 	else:
 		return False
 
-spitogatos_listings_html_body = ""
-# spitogatos_links_list = []
-search_timeout = int(time.time())
-count = 0
 
-print("\nSearching in Spitogatos.gr.\n")
+def update_progress(progress):
+	sys.stdout.write('\r[{0}] {1}%'.format('#'*int(progress/10), int(progress)))
+	sys.stdout.flush()
+
+def find_total_listings(page_link, listings_in_page_pattern):
+	page = request_url(page_link)
+	total_listings = re.search(listings_in_page_pattern, page)
+	if total_listings:
+		return(total_listings.group(1))
+	else:
+		exit(1)
+
+
+def find_current_total_pages(page_link, page_pattern):
+	page = request_url(page_link)
+	match_page = re.compile(page_pattern).findall(page)
+	return(match_page[0])
+
+
+spitogatos_listings_html_body = ""
+search_timeout = int(time.time())
+
+total_listings = find_total_listings(spitogatos_url, spitogatos_total_listings_pattern)
+page_count = 0
+found_listings = 0
+
+print("\nSearching in Spitogatos.gr\n")
 while(spitogatos_url):
 	if checkTimeout(search_timeout, spitogatos_website_timeout):
 		search_timeout = time.time()
 
+	url = request_url(spitogatos_url)
 
-	print("Searching in page "+str(1+int(spitogatos_url.rsplit("offset_")[1])/10))
-	response = urlopen(spitogatos_url)
-	url = response.read().decode('utf-8')
-	response.close()
+	progress = page_count/(float(int(total_listings)/spitogatos_nof_listings_in_page))
+	update_progress(100*progress)
 
 	all_listings_match = re.compile(r'searchListing_title"><a href="([^"]+".{1,2800})sg\-icon\-private', re.DOTALL).findall(url)
 	if all_listings_match:
@@ -61,22 +93,19 @@ while(spitogatos_url):
 			match = re.compile(r'([^"]+)".+?</h4>[^<]+<div[^>]+>([^<]+)</div>[^<]*<div[^>]+>[^<]+<strong[^>]+>(\d{1,2}\/\d{1,2}\/\d{4})[^>]+>([^<]+)<.+?class="listingPrice">[^>]+>([^<]+)\D+(\d+)', re.DOTALL).findall(listing)
 			if match:
 				for link, region, date, desc, price, size in match:
-					count += 1
+					found_listings += 1
 					listing_link = link
-					# print date+price+desc+filt
-					print(listing_link)
-					# spitogatos_links_list.append(listing_link)
 					spitogatos_listings_html_body += "<a target=\"_blank\" href="+listing_link+"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+region+"  "+desc+"</a><br>\n"
 
 	next_page = re.findall(r'<link rel="next" href="([^"]+)"',url)
-	# print next_page
 	if not next_page:
 		spitogatos_url = ""
 		break
 	else:
 		spitogatos_url = next_page[0]
+		page_count += 1
 
-print("\nSpitogatos completed. "+str(count)+" listings found.\n")
+print("\nSpitogatos completed. "+str(found_listings)+" listings of total",str(total_listings),"found.\n")
 
 
 # xe.gr
@@ -85,29 +114,28 @@ xe_website_timeout = 1800
 search_timeout = int(time.time())
 xe_links_list = []
 xe_listings_html_body = ""
-count = 0
+
+total_listings = find_total_listings(xe_url, xe_total_listings_pattern)
+page_count = 0
+found_listings = 0
 
 print("\nSearching in Xe.gr.\n")
 while(xe_url):
 	if checkTimeout(search_timeout, xe_website_timeout):
 		search_timeout = time.time()
 
-	page_match = re.search(r'[^_]page=(\d+)', xe_url)
-	if page_match:
-		print("Searching in page " + str(page_match.group(1)))
-	else:
-		print("Last page\n")
-		break
-	response = urlopen(xe_url)
-	url = response.read().decode('utf-8')
-	response.close()
+	page_id, total_listing_pages = find_current_total_pages(xe_url, xe_page_pattern)
+	progress = int(page_id)/(float(int(total_listing_pages)))
+	update_progress(100*progress)
+
+	url = request_url(xe_url)
 
 	all_listings_match = re.compile(r'class="lazy[\S|\s]+?<ul class=\"r_actions\">[\S\s]+?</ul>[\S\s]{1,300}</div').findall(url)
 	for listing in all_listings_match:
 		private_listings_match = re.compile(r'r_desc[^<]+<h2>\s*<a href="([^"]+)"[\S\s]+?<br />([^<]+)[\S\s]+?r_stats">([\S\s]+?)<li>(\d+)[\S\s]+?r_date">([\S\s]+?)</p>[\S\s]+?</ul>[\s]{1,20}</div').findall(listing)
 		if private_listings_match:
 			for link, desc, price_field, size, date in private_listings_match:
-				count += 1
+				found_listings += 1
 				# check if price is given
 				price_match = re.findall(r'r_price">([\S\s]+)<',price_field)
 				if price_match:
@@ -116,7 +144,6 @@ while(xe_url):
 					price = "xx.xxx €"
 				date = date.rstrip()
 				xe_listings_html_body += "<a target=\"_blank\" href=\""+xe_homepage+link+"\"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+ desc+"</a><br>\n"
-				print(link)
 
 
 	next_page = re.findall(r'<td>[^<]+<a href="([^"]+)" class="white_button right+',url)
@@ -125,8 +152,9 @@ while(xe_url):
 		break
 	else:
 		xe_url = "https://www.xe.gr"+next_page[0]
+		page_count += 1
 
-print("\nXE.gr completed. "+str(count)+" listings found.\n")
+print("\nXE.gr completed. "+str(found_listings)+" listings of total",str(total_listings),"found.\n")
 
 
 
