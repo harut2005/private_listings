@@ -26,7 +26,7 @@ spitogatos_url += "/price_nd-"+str(max_price)
 spitogatos_url += "/offset_0" # start from page 1
 
 xe_homepage = "https://www.xe.gr"
-xe_total_listings_pattern = r'r_subtitle">[^>]+>(\d*[.]\d*)<'
+xe_total_listings_pattern = r'r_subtitle">[^>]+>(\d*[\.]*\d*)<'
 xe_page_pattern = r'r_paging_label">[^>]+>(\d*)[^>]+>[^>]+>(\d*)'
 xe_url = xe_homepage + "/property/search?Geo.area_id_new__hierarchy=82196&System.item_type=re_residence&Transaction.price.to="
 xe_url += str(max_price)+"&Transaction.type_channel=117518&per_page=50&sort_by=Publication.effective_date_start&sort_direction=desc"
@@ -61,6 +61,7 @@ def find_total_listings(page_link, listings_in_page_pattern):
 	if total_listings:
 		return(total_listings.group(1))
 	else:
+		print("Not able to find total listings number. Exiting...\n")
 		exit(1)
 
 
@@ -109,6 +110,7 @@ print("\nSpitogatos completed. "+str(found_listings)+" listings of total",str(to
 
 
 # xe.gr
+print("\nSearching in Xe.gr.\n")
 
 xe_website_timeout = 1800
 search_timeout = int(time.time())
@@ -119,7 +121,6 @@ total_listings = find_total_listings(xe_url, xe_total_listings_pattern)
 page_count = 0
 found_listings = 0
 
-print("\nSearching in Xe.gr.\n")
 while(xe_url):
 	if checkTimeout(search_timeout, xe_website_timeout):
 		search_timeout = time.time()
@@ -173,7 +174,7 @@ raw_file += xe_listings_html_body
 raw_file += "</BODY></HTML>"
 
 
-f = open(output_html, 'w')
+f = open(output_html, 'w', encoding="utf-8")
 f.write(raw_file)
 f.close
 
