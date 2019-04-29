@@ -161,7 +161,7 @@ print("\nXE.gr completed. "+str(found_listings)+" listings of total",str(total_l
 
 
 # write links to an html file
-raw_file = '<HTML>\n<HEAD>\n<meta charset="utf-8">\n<TITLE>Spitogatos</TITLE></HEAD>\n<BODY BGCOLOR="FFFFFF">\n'
+raw_file = '<HTML>\n<HEAD>\n<meta charset="utf-8">\n<TITLE>Αγγελίες Κατοικιών μόνο από Ιδιώτες</TITLE></HEAD>\n<BODY BGCOLOR="FFFFFF">\n'
 raw_file += '<H2>Λίστα με ακίνητα τελευταίου μήνα <b>μόνο από ιδιώτες</b> και τιμή μέχρι '+str(max_price)+' € (' + str(datetime.today().strftime("%Y-%m-%d")) + ')</H1>\n'
 
 raw_file += '<div><a href="https://en.spitogatos.gr/"><img src="https://cdn.spitogatos.gr/frontend/images/logo/logo.header.new.en.png"></a></div>\n'
