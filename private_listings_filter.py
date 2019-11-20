@@ -17,7 +17,7 @@ output_html = "private_listings.html"
 
 spitogatos_homepage = "https://spitogatos.gr"
 spitogatos_nof_listings_in_page = 10
-spitogatos_total_listings_pattern = r'searchTotalNumberOfResults">[^<]+<b>(\d+[.]*\d*)<'
+spitogatos_total_listings_pattern = r'searchTotalNumberOfResults">[^<]+<b>(\d+[\.]*\d*)<'
 
 spitogatos_url = spitogatos_homepage + "/search/results/residential/sale/r100/m100m101m102m103m104m/order_datemodified_desc"
 spitogatos_url += "/uploaded_month" # only listings added last month
@@ -79,7 +79,7 @@ def find_total_listings(page, listings_in_page_pattern):
 	# page = request_url(page_link)
 	total_listings = re.search(listings_in_page_pattern, page)
 	if total_listings:
-		return(total_listings.group(1))
+		return(total_listings.group(1).replace(".",""))
 	else:
 		print("Not able to find total listings number. Exiting...\n")
 		exit(1)
