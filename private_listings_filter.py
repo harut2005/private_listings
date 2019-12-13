@@ -14,6 +14,7 @@ print("Price set to: ",str(max_price)," €")
 time_start = time.time()
 spitogatos_website_timeout = 280
 output_html = "private_listings.html"
+output_log = "private_listings.log"
 
 spitogatos_homepage = "https://spitogatos.gr"
 spitogatos_nof_listings_in_page = 10
@@ -35,6 +36,14 @@ xe_url_param = {
 "Transaction.price.to":str(max_price), "Transaction.type_channel":"117518", "per_page":"50", "sort_by":"Publication.effective_date_start","sort_direction":"desc",
 "Publication.level_num.from":"1", # >= Ground Floor"page":"1"}
 "page":"1"}
+
+
+def logAndExit(log_str):
+	f = open(output_log, 'a', encoding="utf-8")
+	f.write("\n"+str(datetime.today().strftime("%Y-%m-%d, %H:%M"))+"\n")
+	f.write(log_str)
+	f.close
+	exit(1)
 
 
 def request_url(url, params=""):
@@ -87,7 +96,18 @@ def find_total_listings(page, listings_in_page_pattern):
 
 def find_current_total_pages(page, page_pattern):
 	match_page = re.compile(page_pattern).findall(page)
-	return(match_page[0])
+	try:
+		return(match_page[0])
+	except(IndexError):
+		print("Total page count couldn't be found")
+
+	logStr = "Search this pattern:\n"
+	logStr += str(page_pattern)
+	logStr += "In this page:\n"
+	logStr += str(page)
+	logStr += "And found the result:\n"
+	logStr += str(match_page)
+	logAndExit(logStr)
 
 
 spitogatos_listings_html_body = ""
