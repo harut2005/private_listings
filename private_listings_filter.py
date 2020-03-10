@@ -150,67 +150,67 @@ while(spitogatos_url):
 print("\nSpitogatos completed. "+str(found_listings)+" listings of total",str(total_listings),"found.\n")
 
 
-# xe.gr
-print("\nSearching in Xe.gr.\n")
-
-xe_website_pause = 1800
-
-xe_links_list = []
+# # xe.gr
+# print("\nSearching in Xe.gr.\n")
+#
+# xe_website_pause = 1800
+#
+# xe_links_list = []
 xe_listings_html_body = ""
-
-total_listings = 0
-total_listing_pages = 0
-found_listings = 0
-page_count = 1
-
-print("\nSearching in Xe.gr.\n")
-
-while(xe_url):
-	url = request_url(xe_url, xe_url_param)
-
-	if (url):
-		all_listings_match = re.compile(r'class="lazy[\S|\s]+?<ul class=\"r_actions[\S\s]+?</ul>[\S\s]{1,300}</div').findall(url)
-		# print(all_listings_match[1])
-		for listing in all_listings_match:
-			private_listings_match = re.compile(r'r_desc[^<]+<h2>\s*<a href="([^"]+)"[\S\s]+?<p>([^<]+)[\S\s]+?r_stats">([\S\s]+?)<li>(\d+)[\S\s]+?r_date">([\S\s]+?)</p>[\S\s]+?</ul>[\s]{1,20}</div').findall(listing)
-			if private_listings_match:
-				# print("match")
-				for link, desc, price_field, size, date in private_listings_match:
-					found_listings += 1
-					# check if price is given
-					price_match = re.findall(r'r_price">([\S\s]+)<',price_field)
-					if price_match:
-						price = price_match[0]
-					else:
-						price = "xx.xxx €"
-					date = date.rstrip()
-					xe_listings_html_body += "<a target=\"_blank\" href=\""+xe_homepage+link+"\"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+ desc+"</a><br>\n"
-			# 	else:
-			# 		print("No match")
-			# else:
-			# 	print("no match at all")
-
-
-		page_id, total_listing_pages = find_current_total_pages(url, xe_page_pattern)
-		page_count = int(page_id)
-		update_progress(page_count, total_listing_pages)
-		page_count += 1
-
-	else:
-		print("\nRetry in",xe_website_pause,"s again")
-		time.sleep(xe_website_pause)
-
-
-	if (page_count > int(total_listing_pages)):
-		# print("\nlast page")
-		total_listings = find_total_listings(url, xe_total_listings_pattern)
-		break
-	else:
-		# update next page
-		xe_url_param["page"] = str(page_count)
-
-
-print("\nXE.gr completed. "+str(found_listings)+" listings of total",str(total_listings),"found.\n")
+#
+# total_listings = 0
+# total_listing_pages = 0
+# found_listings = 0
+# page_count = 1
+#
+# print("\nSearching in Xe.gr.\n")
+#
+# while(xe_url):
+# 	url = request_url(xe_url, xe_url_param)
+#
+# 	if (url):
+# 		all_listings_match = re.compile(r'class="lazy[\S|\s]+?<ul class=\"r_actions[\S\s]+?</ul>[\S\s]{1,300}</div').findall(url)
+# 		# print(all_listings_match[1])
+# 		for listing in all_listings_match:
+# 			private_listings_match = re.compile(r'r_desc[^<]+<h2>\s*<a href="([^"]+)"[\S\s]+?<p>([^<]+)[\S\s]+?r_stats">([\S\s]+?)<li>(\d+)[\S\s]+?r_date">([\S\s]+?)</p>[\S\s]+?</ul>[\s]{1,20}</div').findall(listing)
+# 			if private_listings_match:
+# 				# print("match")
+# 				for link, desc, price_field, size, date in private_listings_match:
+# 					found_listings += 1
+# 					# check if price is given
+# 					price_match = re.findall(r'r_price">([\S\s]+)<',price_field)
+# 					if price_match:
+# 						price = price_match[0]
+# 					else:
+# 						price = "xx.xxx €"
+# 					date = date.rstrip()
+# 					xe_listings_html_body += "<a target=\"_blank\" href=\""+xe_homepage+link+"\"><b>"+price+"</b>  "+size+"m2  ("+date+")  "+ desc+"</a><br>\n"
+# 			# 	else:
+# 			# 		print("No match")
+# 			# else:
+# 			# 	print("no match at all")
+#
+#
+# 		page_id, total_listing_pages = find_current_total_pages(url, xe_page_pattern)
+# 		page_count = int(page_id)
+# 		update_progress(page_count, total_listing_pages)
+# 		page_count += 1
+#
+# 	else:
+# 		print("\nRetry in",xe_website_pause,"s again")
+# 		time.sleep(xe_website_pause)
+#
+#
+# 	if (page_count > int(total_listing_pages)):
+# 		# print("\nlast page")
+# 		total_listings = find_total_listings(url, xe_total_listings_pattern)
+# 		break
+# 	else:
+# 		# update next page
+# 		xe_url_param["page"] = str(page_count)
+#
+#
+# print("\nXE.gr completed. "+str(found_listings)+" listings of total",str(total_listings),"found.\n")
 
 
 
